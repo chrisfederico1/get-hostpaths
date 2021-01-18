@@ -7,22 +7,22 @@ $result = @()
 foreach ($view in $views | Sort-Object -Property Name) {
     Write-Host "Checking" $view.Name
  
-    $view.Config.StorageDevice.ScsiTopology.Adapter |?{ $_.Adapter -like "*FibreChannelHba*" } | %{
+    $view.Config.StorageDevice.ScsiTopology.Adapter |where-object { $_.Adapter -like "*FibreChannelHba*" } | foreach-object {
         $hba = $_.Adapter.Split("-")[2]
  
         $active = 0
         $standby = 0
         $dead = 0
  
-        $_.Target | %{ 
-            $_.Lun | %{
+        $_.Target | foreach-object { 
+            $_.Lun | foreach-object {
                 $id = $_.ScsiLun
  
-                $multipathInfo = $view.Config.StorageDevice.MultipathInfo.Lun | ?{ $_.Lun -eq $id }
+                $multipathInfo = $view.Config.StorageDevice.MultipathInfo.Lun | foreach-object { $_.Lun -eq $id }
  
-                $a = [ARRAY]($multipathInfo.Path | ?{ $_.PathState -like "active" })
-                $s = [ARRAY]($multipathInfo.Path | ?{ $_.PathState -like "standby" })
-                $d = [ARRAY]($multipathInfo.Path | ?{ $_.PathState -like "dead" })
+                $a = [ARRAY]($multipathInfo.Path | foreach-object { $_.PathState -like "active" })
+                $s = [ARRAY]($multipathInfo.Path | foreach-object { $_.PathState -like "standby" })
+                $d = [ARRAY]($multipathInfo.Path | foreach-object { $_.PathState -like "dead" })
  
                 $active += $a.Count
                 $standby += $s.Count
@@ -34,5 +34,5 @@ foreach ($view in $views | Sort-Object -Property Name) {
     }
 }
  
-ConvertFrom-Csv -Header "VMHost", "HBA", "Active", "Dead", "Standby" -InputObject $result | ft -AutoSize
+ConvertFrom-Csv -Header "VMHost", "HBA", "Active", "Dead", "Standby" -InputObject $result | Format-Table -AutoSize
 
