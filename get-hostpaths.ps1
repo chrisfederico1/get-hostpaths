@@ -1,7 +1,8 @@
-Check storage paths on all ESXi hosts (FAST!):
- Code Block
+#Check storage paths on all ESXi hosts (FAST!):
 
-$views = Get-View -ViewType "HostSystem" -Property Name,Config.StorageDevice -SearchRoot (Get-Datacenter "ClusterName" | Get-View).MoRef
+
+$views = Get-View -ViewType "HostSystem" -Property Name,Config.StorageDevice -SearchRoot (Get-Datacenter "S1-DevTest01
+" | Get-View).MoRef
 $result = @()
  
 foreach ($view in $views | Sort-Object -Property Name) {
